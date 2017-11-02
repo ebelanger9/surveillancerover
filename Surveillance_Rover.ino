@@ -10,6 +10,14 @@ By :
 - Gabriel Tremblay
 */
 
+/*
+TO DO :
+- Change servo type to Analog Type
+- Do analogWrite between 0-5V (0-255)
+- Change Sabertooth switch setting to : all 1 except for switch 4 which is off
+  (note that the default setting given is 1 on, everything else off)
+*/
+
 //Include libraries
 #include <Servo.h>
 #include <Wire.h>
@@ -45,9 +53,9 @@ int noteLengts[] = { 125,125,500 };
 //Main setup area
 void setup() 
 {
-  //Set servo to pin 8 and 9
-  fwd.attach(8);
-  turn.attach(9);
+  //Set servo to pin A4 and A5
+  fwd.attach(A2);
+  turn.attach(A3);
 
   // Serial output
   Serial.begin(9600);
@@ -143,6 +151,7 @@ void loop()
 {
   for(pos = 30; pos <= 150; pos += 1)
   {
+    delay(10);
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
@@ -150,6 +159,7 @@ void loop()
   }
   for(pos = 150; pos>=30; pos-=1)
   {
+    delay(10);
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
