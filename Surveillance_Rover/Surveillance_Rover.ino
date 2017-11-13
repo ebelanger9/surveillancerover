@@ -54,8 +54,8 @@ int noteLengts[] = { 125,125,500 };
 void setup() 
 {
   //Set servo to pin A4 and A5
-  fwd.attach(8);
-  turn.attach(9);
+  fwd.attach(8, 1000, 2000);
+  turn.attach(9, 1000, 2000);
 
   // Serial output
   Serial.begin(115200);
@@ -119,29 +119,38 @@ void serialPrintTurn(int pos, int distance)
 
 void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
 {
-  if(distance <= 30)
+  //The speed when turning needs to be > 100 in order to keep spinning
+  //Fwd < 90 -> Rear
+  //Fwd = 90 -> Stops
+  //Fwd > 90 -> Forward
+  //Turn < 90 -> Left
+  //Turn = 90 -> Front
+  //Turn > 90 -> Right
+  if(pos < 90 && distance <= 120)
   {
-    *pFwd = 255;
-    *pTurn = 0;
+    *pFwd = 120;
+    *pTurn = 120;
+    serialPrintTurn(pos, distance);
+  }
+  else if(pos >= 90 && distance <= 120)
+  {
+    *pFwd = 120;
+    *pTurn = 60;
     serialPrintTurn(pos, distance);
   }
   else
   {
-    *pFwd = 100;
-    *pTurn = 255;
+    *pFwd = 110;
+    *pTurn = 90;
   }
 }
 
 void spinWheels(int varFwd, int varTurn)
 {
-  //0-127 -> Rear
-  //128-255 -> Forward
   fwd.write(varFwd);
   Serial.print("\nValeur de varFwd : ");
   Serial.print(varFwd);
   
-  //0-127 -> Left
-  //128-255 -> Right
   turn.write(varTurn);
   Serial.print("\tValeur de varTurn : ");
   Serial.print(varTurn);
@@ -149,20 +158,20 @@ void spinWheels(int varFwd, int varTurn)
 
 void loop() 
 {
-  for(pos = 30; pos <= 150; pos += 1)
+  for(pos = 30; pos <= 150; pos += 3)
   {
-    delay(10);
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
-    spinWheels(varFwd, varTurn);
+    if (pos % 6 == 0)
+      spinWheels(varFwd, varTurn);
   }
-  for(pos = 150; pos>=30; pos-=1)
+  for(pos = 150; pos>=30; pos -= 3)
   {
-    delay(10);
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
-    spinWheels(varFwd, varTurn);
+    if (pos % 6 == 0)
+      spinWheels(varFwd, varTurn);
   }
 }
