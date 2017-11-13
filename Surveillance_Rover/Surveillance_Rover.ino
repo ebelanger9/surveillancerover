@@ -54,11 +54,11 @@ int noteLengts[] = { 125,125,500 };
 void setup() 
 {
   //Set servo to pin A4 and A5
-  fwd.attach(A2);
-  turn.attach(A3);
+  fwd.attach(8);
+  turn.attach(9);
 
   // Serial output
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("< START >");
   
   //Set LIDAR servo control to pin 7
