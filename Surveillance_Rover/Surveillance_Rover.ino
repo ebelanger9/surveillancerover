@@ -119,17 +119,17 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
   //Turn > 90 -> Right
   if(pos < 90 && distance <= 120)
   {
-    *pFwd = 120;
-    *pTurn = 120;
+    *pFwd = 90;
+    *pTurn = 90;
   }
   else if(pos >= 90 && distance <= 120)
   {
-    *pFwd = 120;
-    *pTurn = 60;
+    *pFwd = 90;
+    *pTurn = 90;
   }
   else
   {
-    *pFwd = 110;
+    *pFwd = 90;
     *pTurn = 90;
   }
 }
@@ -143,22 +143,26 @@ void spinWheels(int varFwd, int varTurn)
 
 void loop() 
 {
-  for(pos = 30; pos <= 150; pos += 3)
+  for(pos = 30; pos <= 150; pos += 6)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
+    Serial.print("\n");
     Serial.print(distance);
+    Serial.print("\t");
     Serial.print(pos);
     if (pos % 6 == 0)
       spinWheels(varFwd, varTurn);
   }
-  for(pos = 150; pos>=30; pos -= 3)
+  for(pos = 150; pos>=30; pos -= 6)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
+    Serial.print("\n");
     Serial.print(distance);
+    Serial.print("\t");
     Serial.print(pos);
     if (pos % 6 == 0)
       spinWheels(varFwd, varTurn);
