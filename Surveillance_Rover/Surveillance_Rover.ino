@@ -108,15 +108,6 @@ int lidarGetRange(void)
   return val;
 } 
 
-void serialPrintTurn(int pos, int distance)
-{
-    Serial.print("TURNING \n");
-    Serial.print("Position (deg): ");
-    Serial.print(pos);
-    Serial.print("\t\tDistance (cm): ");
-    Serial.println(distance);
-}
-
 void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
 {
   //The speed when turning needs to be > 100 in order to keep spinning
@@ -130,13 +121,11 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
   {
     *pFwd = 120;
     *pTurn = 120;
-    serialPrintTurn(pos, distance);
   }
   else if(pos >= 90 && distance <= 120)
   {
     *pFwd = 120;
     *pTurn = 60;
-    serialPrintTurn(pos, distance);
   }
   else
   {
@@ -148,12 +137,8 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
 void spinWheels(int varFwd, int varTurn)
 {
   fwd.write(varFwd);
-  Serial.print("\nValeur de varFwd : ");
-  Serial.print(varFwd);
   
   turn.write(varTurn);
-  Serial.print("\tValeur de varTurn : ");
-  Serial.print(varTurn);
 }
 
 void loop() 
@@ -163,6 +148,8 @@ void loop()
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
+    Serial.print(distance);
+    Serial.print(pos);
     if (pos % 6 == 0)
       spinWheels(varFwd, varTurn);
   }
@@ -171,6 +158,8 @@ void loop()
     lidarServo.write(pos);
     distance = lidarGetRange();
     calculateDirection(distance, pos, &varFwd, &varTurn);
+    Serial.print(distance);
+    Serial.print(pos);
     if (pos % 6 == 0)
       spinWheels(varFwd, varTurn);
   }
