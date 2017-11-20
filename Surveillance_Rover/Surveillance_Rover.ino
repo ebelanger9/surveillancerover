@@ -58,7 +58,7 @@ void setup()
   turn.attach(9, 1000, 2000);
 
   // Serial output
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("< START >");
   
   //Set LIDAR servo control to pin 7

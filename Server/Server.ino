@@ -8,8 +8,8 @@
   #define     BUTTON    3          // Connectivity ReInitiate Button
 //------------------------------------------------------------------------------------
   // Authentication Variables
-  char*       TKDssid;              // SERVER WIFI NAME
-  char*       TKDpassword;          // SERVER PASSWORD
+  char*       ssid;              // SERVER WIFI NAME
+  char*       password;          // SERVER PASSWORD
 //------------------------------------------------------------------------------------
   #define     MAXSC     6           // MAXIMUM NUMBER OF CLIENTS
 
@@ -24,8 +24,8 @@
    * 6. Corner Referee 4
    */
   
-  WiFiServer  TKDServer(9001);      // THE SERVER AND THE PORT NUMBER
-  WiFiClient  TKDClient[MAXSC];     // THE SERVER CLIENTS (Devices)
+  WiFiServer  server(80);      // THE SERVER AND THE PORT NUMBER
+  WiFiClient  clients;          // THE SERVER CLIENTS (Devices)
 //====================================================================================
 
   void setup()
@@ -51,10 +51,16 @@
   
   void loop()
   {
-    // Checking For Available Clients
-    AvailableClients();
-    // Checking For Available Client Messages
-    AvailableMessage();
+    WiFiClient clients = server.available();
+    if (clients) {
+      if (clients.connected()) {
+        String request = Serial.readStringUntil('\n');    // receives the message from the client
+        clients.println(request); 
+        clients.flush();
+      }
+    
+      clients.stop(); 
+    }
   }
 
 //====================================================================================
@@ -69,12 +75,12 @@
     Serial.println("WIFI Mode : AccessPoint Station");
     
     // Setting The AccessPoint Name & Password
-    TKDssid      = Name;
-    TKDpassword  = Password;
+    ssid      = Name;
+    password  = Password;
     
     // Starting The Access Point
-    WiFi.softAP(TKDssid, TKDpassword);
-    Serial.println("WIFI < " + String(TKDssid) + " > ... Started");
+    WiFi.softAP(ssid, password);
+    Serial.println("WIFI < " + String(ssid) + " > ... Started");
     
     // Wait For Few Seconds
     delay(1000);
@@ -91,8 +97,8 @@
     Serial.println(String(WiFi.softAPmacAddress()));
 
     // Starting Server
-    TKDServer.begin();
-    TKDServer.setNoDelay(true);
+    server.begin();
+    server.setNoDelay(true);
     Serial.println("Server Started");
   }
 
@@ -100,7 +106,7 @@
 
   void AvailableClients()
   {   
-    if (TKDServer.hasClient())
+    if (server.hasClient())
     {
       // Read LED0 Switch To Low If High.
       if(digitalRead(LED0) == HIGH) digitalWrite(LED0, LOW);
@@ -111,16 +117,16 @@
       for(uint8_t i = 0; i < MAXSC; i++)
       {
         //find free/disconnected spot
-        if (!TKDClient[i] || !TKDClient[i].connected())
+        if (!clients || !clients.connected())
         {
           // Checks If Previously The Client Is Taken
-          if(TKDClient[i])
+          if(clients)
           {
-            TKDClient[i].stop();
+            clients.stop();
           }
 
           // Checks If Clients Connected To The Server
-          if(TKDClient[i] = TKDServer.available())
+          if(clients = server.available())
           {
             Serial.println("New Client: " + String(i));
           }
@@ -131,8 +137,8 @@
       }
       
       //no free/disconnected spot so reject
-      WiFiClient TKDClient = TKDServer.available();
-      TKDClient.stop();
+      WiFiClient clients = server.available();
+      clients.stop();
     }
     else
     {
@@ -151,12 +157,12 @@
     //check clients for data
     for(uint8_t i = 0; i < MAXSC; i++)
     {
-      if (TKDClient[i] && TKDClient[i].connected() && TKDClient[i].available())
+      if (clients && clients.connected() && clients.available())
       {
-          while(TKDClient[i].available())
+          while(clients.available())
           {
-            String Message = TKDClient[i].readStringUntil('\r');
-            TKDClient[i].flush();
+            String Message = clients.readStringUntil('\r');
+            clients.flush();
             Serial.println("Client No " + String(i) + " - " + Message);
           }
       }
