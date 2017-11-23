@@ -33,11 +33,18 @@ int yAxis = A1;
 int xAxis = A2;
 int yVal;
 int xVal;
+int i = 0;
 int varFwd = 100;
 int varTurn = 255;
 int defaultSpeed = 110;
+int waypoint;
+int maxVal = 0;
+int curVal = 0;
+int index;
 double angle;
 double object;
+
+int ranges[20];
 
 //Servo definition
 Servo fwd;
@@ -114,7 +121,7 @@ int lidarGetRange(void)
   return val;
 } 
 
-void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
+void calculateDirection(int distance, int pos, int *pFwd, int *pTurn, int waypoint)
 {
   //The speed when turning needs to be > 100 in order to keep spinning
   //Fwd < 90 -> Rear
@@ -220,28 +227,50 @@ void spinWheels(int varFwd, int varTurn)
 
 void loop() 
 {
+  i = 0;
   for(pos = 30; pos <= 150; pos += 6)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
-    calculateDirection(distance, pos, &varFwd, &varTurn);
+    ranges[i] = distance;
+    i++;
     Serial.print("\n");
     Serial.print(distance);
     Serial.print("\t");
     Serial.print(pos);
-    if (pos % 6 == 0)
-      spinWheels(varFwd, varTurn);
+    spinWheels(varFwd, varTurn);
   }
+  
+  maxVal = 0;
+  curVal = 0;
+  
+  for(i = 0; i < 20; i++)
+  {
+    curVal = ranges[i];
+    
+    if(curVal > maxVal)
+    {
+      maxVal = curVal;
+      index = i;
+    }
+  }
+
+  if(index >= 0 && < 8)
+  {
+    
+  }
+  
+  calculateDirection(distance, pos, &varFwd, &varTurn, waypoint);
+  i = 0;
   for(pos = 150; pos>=30; pos -= 6)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
-    calculateDirection(distance, pos, &varFwd, &varTurn);
+    calculateDirection(distance, pos, &varFwd, &varTurn, waypoint);
     Serial.print("\n");
     Serial.print(distance);
     Serial.print("\t");
     Serial.print(pos);
-    if (pos % 6 == 0)
-      spinWheels(varFwd, varTurn);
+    spinWheels(varFwd, varTurn);
   }
 }
