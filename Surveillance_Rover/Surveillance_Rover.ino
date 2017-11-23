@@ -35,11 +35,17 @@ int yVal;
 int xVal;
 int varFwd = 100;
 int varTurn = 255;
+int defaultSpeed = 110;
+double angle;
+double object;
 
 //Servo definition
 Servo fwd;
 Servo turn;  
 Servo lidarServo;
+
+//Pi definition
+const double pi = 3.14159265359;
 
 //LIDAR-Lite inital definitions
 int pos = 75;         // Position of the servo (degress, [0, 180])
@@ -117,19 +123,90 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn)
   //Turn < 90 -> Left
   //Turn = 90 -> Front
   //Turn > 90 -> Right
-  if(pos < 90 && distance <= 120)
+
+  angle = pos * (pi / 180);
+  object = distance * sin(angle);
+  
+  if(pos < 40 || pos > 140)
   {
-    *pFwd = 90;
+    *pFwd = defaultSpeed;
     *pTurn = 90;
   }
-  else if(pos >= 90 && distance <= 120)
+  else if(pos > 40 && pos < 90)
   {
-    *pFwd = 90;
-    *pTurn = 90;
+    if(object <= 15)
+    {
+      for(int i = 0; i < 10000; i++)
+      {
+        *pFwd = 50;
+        *pTurn = 90;
+      }
+    }
+    if(object > 15 && object <= 30)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 180;
+    }
+    else if(object > 30 && object <= 40)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 160;
+    }
+    else if(object > 40 && object <= 50)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 140;
+    }
+    else if(object > 50 && object <= 60)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 120;
+    }
+    else if(object > 60 && object <= 70)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 100;
+    }
+  }
+  else if(pos > 90 && pos < 140)
+  {
+    if(object <= 15)
+    {
+      for(int i = 0; i < 10000; i++)
+      {
+        *pFwd = 50;
+        *pTurn = 90;
+      }
+    }
+    else if(object > 15 && object <= 30)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 0;
+    }
+    else if(object > 30 && object <= 40)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 20;
+    }
+    else if(object > 40 && object <= 50)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 40;
+    }
+    else if(object > 50 && object <= 60)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 60;
+    }
+    else if(object > 60 && object <= 70)
+    {
+      *pFwd = defaultSpeed;
+      *pTurn = 80;
+    }
   }
   else
   {
-    *pFwd = 90;
+    *pFwd = defaultSpeed;
     *pTurn = 90;
   }
 }
