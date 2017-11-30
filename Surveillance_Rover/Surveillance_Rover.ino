@@ -42,7 +42,12 @@ int maxVal = 0;
 int curVal = 0;
 int index;
 int count = 0;
+int pushbutton = 0;
+
+//Activate test mode
 bool test = false;
+bool lasttest = false;
+
 double angle;
 double object;
 
@@ -68,6 +73,9 @@ int noteLengts[] = { 125,125,500 };
 //Main setup area
 void setup() 
 {
+  //Set pushbutton to pin 8 as input
+  pinMode(8, INPUT);
+  
   //Set servo to pin A4 and A5
   fwd.attach(8, 1000, 2000);
   turn.attach(9, 1000, 2000);
@@ -237,6 +245,18 @@ void loop()
 {
   i = 0;
 
+  pushbutton = digitalRead(8);
+  if(pushbutton == HIGH) {
+    if(lasttest == false) {
+      test = true;
+      lasttest = true;
+    }
+    else {
+      test = false;
+      lasttest = false;
+    }
+  }
+  
   count = 0;
   for(pos = 30; pos <= 150; pos += 10)
   {
