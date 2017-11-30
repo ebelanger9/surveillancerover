@@ -41,10 +41,12 @@ int waypoint;
 int maxVal = 0;
 int curVal = 0;
 int index;
+int count = 0;
+bool test = false;
 double angle;
 double object;
 
-int ranges[20];
+int ranges[12];
 
 //Servo definition
 Servo fwd;
@@ -130,24 +132,25 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn, int waypoi
   //Turn < 90 -> Left
   //Turn = 90 -> Front
   //Turn > 90 -> Right
+  //Waypoint directions :
+  //0 -> Forward
+  //1 -> Left
+  //2 -> Right
 
   angle = pos * (pi / 180);
   object = distance * sin(angle);
   
-  if(pos < 40 || pos > 140)
+  if(waypoint == 0)
   {
     *pFwd = defaultSpeed;
     *pTurn = 90;
   }
-  else if(pos > 40 && pos < 90)
+  else if(waypoint == 1)
   {
     if(object <= 15)
     {
-      for(int i = 0; i < 10000; i++)
-      {
-        *pFwd = 50;
-        *pTurn = 90;
-      }
+      *pFwd = 50;
+      *pTurn = 180;
     }
     if(object > 15 && object <= 30)
     {
@@ -175,15 +178,12 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn, int waypoi
       *pTurn = 100;
     }
   }
-  else if(pos > 90 && pos < 140)
+  else if(waypoint == 2)
   {
     if(object <= 15)
     {
-      for(int i = 0; i < 10000; i++)
-      {
-        *pFwd = 50;
-        *pTurn = 90;
-      }
+      *pFwd = 50;
+      *pTurn = 0;
     }
     else if(object > 15 && object <= 30)
     {
@@ -220,15 +220,25 @@ void calculateDirection(int distance, int pos, int *pFwd, int *pTurn, int waypoi
 
 void spinWheels(int varFwd, int varTurn)
 {
-  fwd.write(varFwd);
+  if(test == true)
+  {
+    fwd.write(90);
+    turn.write(90);
+  }
+  else
+  {
+    fwd.write(varFwd);
+    turn.write(varTurn);
+  }
   
-  turn.write(varTurn);
 }
 
 void loop() 
 {
   i = 0;
-  for(pos = 30; pos <= 150; pos += 6)
+
+  count = 0;
+  for(pos = 30; pos <= 150; pos += 10)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
@@ -238,7 +248,22 @@ void loop()
     Serial.print(distance);
     Serial.print("\t");
     Serial.print(pos);
-    spinWheels(varFwd, varTurn);
+    if(waypoint == 1 || waypoint == 2)
+    {
+      count++;
+      if(count < 5)
+      {
+        spinWheels(varFwd, varTurn);
+      }
+      else
+      {
+        spinWheels(varFwd, 90);
+      }
+    }
+    else
+    {
+      spinWheels(varFwd, varTurn);
+    }
   }
   
   maxVal = 0;
@@ -255,22 +280,76 @@ void loop()
     }
   }
 
-  if(index >= 0 && < 8)
+  if(index >= 0 && index < 8)
   {
-    
+    waypoint = 1;
+  }
+  if(index >=8 && index <= 11)
+  {
+    waypoint = 0;
+  }
+  if(index > 11 && index <= 20)
+  {
+    waypoint = 2;
   }
   
   calculateDirection(distance, pos, &varFwd, &varTurn, waypoint);
   i = 0;
-  for(pos = 150; pos>=30; pos -= 6)
+  count = 0;
+  for(pos = 150; pos>=30; pos -= 10)
   {
     lidarServo.write(pos);
     distance = lidarGetRange();
-    calculateDirection(distance, pos, &varFwd, &varTurn, waypoint);
+    ranges[i] = distance;
+    i++;
     Serial.print("\n");
     Serial.print(distance);
     Serial.print("\t");
     Serial.print(pos);
-    spinWheels(varFwd, varTurn);
+    if(waypoint == 1 || waypoint == 2)
+    {
+      count++;
+      if(count < 5)
+      {
+        spinWheels(varFwd, varTurn);
+      }
+      else
+      {
+        spinWheels(varFwd, 90);
+      }
+    }
+    else
+    {
+      spinWheels(varFwd, varTurn);
+    }
   }
+
+  maxVal = 0;
+  curVal = 0;
+  
+  for(i = 0; i < 20; i++)
+  {
+    curVal = ranges[i];
+    
+    if(curVal > maxVal)
+    {
+      maxVal = curVal;
+      index = i;
+    }
+  }
+
+  if(index >= 0 && index < 8)
+  {
+    waypoint = 2;
+  }
+  if(index >=8 && index <= 11)
+  {
+    waypoint = 0;
+  }
+  if(index > 11 && index <= 20)
+  {
+    waypoint = 1;
+  }
+
+  calculateDirection(distance, pos, &varFwd, &varTurn, waypoint);
 }
